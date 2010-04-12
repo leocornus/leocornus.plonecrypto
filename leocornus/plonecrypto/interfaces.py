@@ -17,3 +17,18 @@ class IPloneCryptoTool(Interface):
     """
 
     id = Attribute('id', 'Must set to "leocornus_crypto"')
+
+class IPloneCrypter(Interface):
+    """
+    providing the APIs for doing cryptography in a Plone site.
+    """
+
+    def encrypt(message):
+        """
+        Return an encrypted message for the given raw message.
+        """
+
+    def decrypt(message):
+        """
+        Return the raw message for the given encrypted message.
+        """

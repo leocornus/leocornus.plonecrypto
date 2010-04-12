@@ -32,7 +32,22 @@ class InstallationTestCase(PlonecryptoTestCase):
         self.assertEquals(crypto.getProperty('favorite_color'), 'testing ...')
         self.assertEquals(crypto.getProperty('contact_email'), '')
 
+class CryptoTestCase(PlonecryptoTestCase):
+
+    def testEncryptAndDecrypt(self):
+
+        crypto = getToolByName(self.portal, 'leocornus_crypto')
+
+        rawMsg = "hello world!"
+
+        encrypted = crypto.encrypt(rawMsg)
+        self.failIf(encrypted == rawMsg)
+
+        decrypted = crypto.decrypt(encrypted)
+        self.failUnless(decrypted == rawMsg)
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(InstallationTestCase))
+    suite.addTest(unittest.makeSuite(CryptoTestCase))
     return suite

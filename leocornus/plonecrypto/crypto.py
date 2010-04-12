@@ -16,6 +16,7 @@ from Products.CMFCore.utils import SimpleItemWithProperties
 from Products.CMFCore.utils import registerToolInterface
 
 from interfaces import IPloneCryptoTool
+from interfaces import IPloneCrypter
 
 __author__ = "Sean Chen"
 __email__ = "sean.chen@leocorn.com"
@@ -48,6 +49,27 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
 
     contact_email = ''
     favorite_color = 'testing ...'
+
+    @property
+    def crypter(self):
+
+        return IPloneCrypter(self)
+
+    security.declarePrivate('encrypt')
+    def encrypt(self, message):
+        """
+        Return a encrypted message for the given raw message.
+        """
+
+        return self.crypter.encrypt(message)
+
+    security.declarePrivate('decrypt')
+    def decrypt(self, message):
+        """
+        Return the raw message from the given encrypted message.
+        """
+
+        return self.crypter.decrypt(message)
 
 InitializeClass(PloneCryptoTool)
 registerToolInterface('leocornus_crypto', IPloneCryptoTool)

@@ -1,0 +1,10 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope">
+
+  <adapter
+     for="leocornus.plonecrypto.interfaces.IPloneCryptoTool"
+     provides="leocornus.plonecrypto.interfaces.IPloneCrypter"
+     factory=".base.FileCrypter"
+  />
+
+</configure>

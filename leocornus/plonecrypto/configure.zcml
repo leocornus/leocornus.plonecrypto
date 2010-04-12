@@ -7,7 +7,7 @@
 
   <five:registerPackage package="." initialize=".initialize" />
 
-  <include package=".keyczar" />
+  <include package=".crypter" />
 
   <include file="profiles.zcml" />
 

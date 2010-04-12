@@ -15,7 +15,7 @@ from leocornus.plonecrypto.interfaces import IPloneCrypter
 __author__ = "Sean Chen"
 __email__ = "sean.chen@leocorn.com"
 
-class BaseKeyczarCrypter(object):
+class BaseCrypter(object):
     """
     the base class for keyczar crypter.  Only includes generic functions,
     no exact implementation yet!
@@ -35,7 +35,7 @@ class BaseKeyczarCrypter(object):
 
         raise NotImplemented
 
-class FileCrypter(BaseKeyczarCrypter):
+class FileKeyczarCrypter(BaseCrypter):
     """
     A Keyczar crypter implementation based on default File reader.
     """

@@ -5,4 +5,8 @@ Change Log
 version 0.1
 -----------
 
-
+  * Providing easy to use APIs for encrypt and decrypt.
+  * Keys management panel to add new key and clear and regenerate
+    keys.
+  * Ability to periodically clear and regenerate keys, leverage on 
+    clock-server in zope.conf

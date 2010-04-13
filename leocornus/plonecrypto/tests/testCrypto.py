@@ -46,6 +46,19 @@ class CryptoTestCase(PlonecryptoTestCase):
         decrypted = crypto.decrypt(encrypted)
         self.failUnless(decrypted == rawMsg)
 
+        crypto.crypter.addPrimaryKey()
+        encryptedNew = crypto.encrypt(rawMsg)
+        self.failIf(encryptedNew == rawMsg)
+        self.failIf(encryptedNew == encrypted)
+
+        stillGood = crypto.decrypt(encrypted)
+        self.failUnless(stillGood == rawMsg)
+        self.failUnless(stillGood == decrypted)
+    
+        decryptedNew = crypto.decrypt(encryptedNew)
+        self.failUnless(decryptedNew == rawMsg)
+        self.failUnless(decrypted == decryptedNew)
+
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(InstallationTestCase))

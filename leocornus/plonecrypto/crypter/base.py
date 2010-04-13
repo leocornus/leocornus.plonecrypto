@@ -7,9 +7,6 @@ Plone crypter's base implementation by using keyczar
 
 from zope.interface import implements
 
-from keyczar.keyczar import Crypter
-from keyczar.errors import KeyczarError
-
 from leocornus.plonecrypto.interfaces import IPloneCrypter
 
 __author__ = "Sean Chen"
@@ -34,21 +31,3 @@ class BaseCrypter(object):
     def decrypt(self, message):
 
         raise NotImplemented
-
-class FileKeyczarCrypter(BaseCrypter):
-    """
-    A Keyczar crypter implementation based on default File reader.
-    """
-
-    def __init__(self, context):
-
-        self.context = context
-        self.crypter = Crypter.Read('/usr/local/rd/keyczar/rsa-keys')
-
-    def encrypt(self, message):
-
-        return self.crypter.Encrypt(message)
-
-    def decrypt(self, message):
-
-        return self.crypter.Decrypt(message)

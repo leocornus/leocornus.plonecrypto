@@ -7,8 +7,15 @@
 
   <five:registerPackage package="." initialize=".initialize" />
 
+  <include package="zope.annotation" />
+
   <include package=".crypter" />
 
   <include file="profiles.zcml" />
+
+  <five:implements
+     class=".crypto.PloneCryptoTool"
+     interface="zope.annotation.interfaces.IAttributeAnnotatable"
+  />
 
 </configure>

@@ -4,7 +4,7 @@
   <adapter
      for="leocornus.plonecrypto.interfaces.IPloneCryptoTool"
      provides="leocornus.plonecrypto.interfaces.IPloneCrypter"
-     factory=".base.FileKeyczarCrypter"
+     factory=".czar.PloneKeyczarCrypter"
   />
 
 </configure>

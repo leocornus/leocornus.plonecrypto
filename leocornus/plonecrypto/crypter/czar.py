@@ -38,8 +38,6 @@ class PloneKeyczarCrypter(BaseCrypter):
             self.createKeyset()
             self.addPrimaryKey()
 
-        self.crypter = Crypter(AnnotationReader(self.context))
-
     def createKeyset(self, asymmetric=keyinfo.RSA_PRIV):
         """
         create a new keyset and save to the annotation
@@ -69,13 +67,27 @@ class PloneKeyczarCrypter(BaseCrypter):
             keyKey = '%s.%s' % (KEYCZAR_ANNO_KEY, str(v.version_number))
             self.anno[keyKey] = str(keyczar.GetKey(v))
 
+    def clearKeys(self):
+        """
+        remove the key metadata and destroy all keys.
+        """
+
+        keyczar = GenericKeyczar(AnnotationReader(self.context))
+        for v in keyczar.versions:
+            keyKey = '%s.%s' % (KEYCZAR_ANNO_KEY, str(v.version_number))
+            self.anno.pop(keyKey)
+
+        self.anno.pop(self.metaKey)
+
     def encrypt(self, message):
 
-        return self.crypter.Encrypt(message)
+        crypter = Crypter(AnnotationReader(self.context))
+        return crypter.Encrypt(message)
 
     def decrypt(self, message):
 
-        return self.crypter.Decrypt(message)
+        crypter = Crypter(AnnotationReader(self.context))
+        return crypter.Decrypt(message)
 
 class AnnotationReader(Reader):
     """

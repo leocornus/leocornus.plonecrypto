@@ -1,0 +1,80 @@
+<h1 tal:replace="structure here/manage_page_header"> PAGE HEADER </h1>
+<h2 tal:replace="structure here/manage_tabs"> PAGE HEADER </h2>
+
+<h3>Cryptographic Keys Management</h3>
+
+<p class="form-help">
+This page is configured to manage keys used for cryptography in a Plone site
+</p>
+
+<p>
+This implementation uses a ring of keys: one of them (primary key) is used to
+generate new session identifiters, the others are older active keys which
+are still considerd to be valid.
+</p>
+
+<h4>Invalidate all keys</h4>
+
+<p>
+By clicking the button below you clear all keys and regenerate a set of new keys.
+This will make all current valid connections invalid.  Since the keys are not
+available.
+</p>
+
+<form method="post" action="."
+      tal:attributes="action string:${context/absolute_url}">
+    <input type="submit" name="manage_clearAndRegenerate:method" value="Clear Keys">
+    <input tal:replace="structure context/@@authenticator/authenticator" />
+</form>
+
+<p>
+It is a good idea to regularly clear and re-generate all keys. This can be done
+manually using the above command, or automated using Zope's clock server. To
+do this add a stanza like the following to your <em>zope.conf</em>:
+</p>
+
+<pre>
+&lt;clock-server&gt;
+  method <span tal:replace="python:'/'.join(context.getPhysicalPath()) + '/manage_clearAndRegenerate'">/Plone/leocoruns_crypto/manage_clearAndRegenerate</span>
+  period 14400
+  user admin
+  password <em>&lt;admin password&gt;</em>
+  host localhost
+&lt;/clock-server&gt;
+</pre>
+
+<h4>Create a new key</h4>
+
+<p>
+By clicking the button below a new key will be created and added
+to the ring.</p>
+
+
+<form method="post" action="."
+      tal:attributes="action string:${context/absolute_url}">
+    <input type="submit" name="manage_addNewKey:method" value="New Key">
+    <input tal:replace="structure context/@@authenticator/authenticator" />
+</form>
+
+<p>
+It is a good idea to regularly create a new key. This can be done
+manually using the above command, or automated using Zope's clock server. To
+do this add a stanza like the following to your <em>zope.conf</em>:
+</p>
+
+<pre>
+&lt;clock-server&gt;
+  method <span tal:replace="python:'/'.join(context.getPhysicalPath()) + '/manage_addNewKey'">/Plone/leocoruns_crypto/manage_addNewKey</span>
+  period 14400
+  user admin
+  password <em>&lt;admin password&gt;</em>
+  host localhost
+&lt;/clock-server&gt;
+</pre>
+
+<p>
+This instructs Zope to call routine to create a new key every four hours.
+Make sure to configure a valid manager login.
+</p>
+
+<h1 tal:replace="structure here/manage_page_footer"> PAGE FOOTER </h1>

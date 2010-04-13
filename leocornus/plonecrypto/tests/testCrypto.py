@@ -9,6 +9,8 @@ import unittest
 
 from Products.CMFCore.utils import getToolByName
 
+from keyczar.errors import KeyNotFoundError
+
 from base import PlonecryptoTestCase
 
 __author__ = "Sean Chen"
@@ -29,8 +31,8 @@ class InstallationTestCase(PlonecryptoTestCase):
         crypto = getToolByName(self.portal, 'leocornus_crypto')
         self.failUnless(crypto)
 
-        self.assertEquals(crypto.getProperty('favorite_color'), 'testing ...')
-        self.assertEquals(crypto.getProperty('contact_email'), '')
+        self.assertEquals(crypto.getProperty('title'),
+                          'Plone Cryptographic Tool')
 
 class CryptoTestCase(PlonecryptoTestCase):
 
@@ -58,6 +60,45 @@ class CryptoTestCase(PlonecryptoTestCase):
         decryptedNew = crypto.decrypt(encryptedNew)
         self.failUnless(decryptedNew == rawMsg)
         self.failUnless(decrypted == decryptedNew)
+
+    def testManageKeys(self):
+
+        crypto = getToolByName(self.portal, 'leocornus_crypto')
+        rawMsg = 'Good Tool!'
+
+        first = crypto.encrypt(rawMsg)
+        self.failIf(first == rawMsg)
+        first_d = crypto.decrypt(first)
+        self.failUnless(first_d == rawMsg)
+
+        anno = crypto.__annotations__
+        self.failUnless(len(anno.keys()) == 2)
+
+        crypto.manage_addNewKey()
+        self.failUnless(len(anno.keys()) == 3)
+
+        second = crypto.encrypt(rawMsg)
+        self.failIf(first == second)
+        second_d = crypto.decrypt(second)
+        self.failUnless(second_d == rawMsg)
+        # after create a new key, the previous encrypted message
+        # still can be decrypted properly!
+        first_d_again = crypto.decrypt(first)
+        self.failUnless(first_d_again == rawMsg)
+
+        crypto.manage_clearAndRegenerate()
+        self.failUnless(len(anno.keys()) == 2)
+
+        third = crypto.encrypt(rawMsg)
+        self.failIf(third == rawMsg)
+        self.failIf(third == first)
+        self.failIf(third == second)
+        third_d = crypto.decrypt(third)
+        self.failUnless(third_d == rawMsg)
+        # now after clear and regenerate keys, none of the previous encrypted
+        # message could be decrypted properly!
+        self.assertRaises(KeyNotFoundError, crypto.decrypt, second)
+        self.assertRaises(KeyNotFoundError, crypto.decrypt, first)
 
 def test_suite():
     suite = unittest.TestSuite()

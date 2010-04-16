@@ -24,7 +24,8 @@ __author__ = "Sean Chen"
 __email__ = "sean.chen@leocorn.com"
 
 # key prefix for annotation used for keyczar
-KEYCZAR_ANNO_KEY = 'leocornus.plonecrypto.crypter.keyczar'
+KEYCZAR_ANNO_META = 'leocornus.plonecrypto.crypter.keyczar.meta'
+KEYCZAR_ANNO_KEYS = 'leocornus.plonecrypto.crypter.keyczar.keys'
 LOGGING_KEY = 'leocornus.plonecrypto.crypter.keyczar.logging'
 
 class PloneKeyczarCrypter(BaseCrypter):
@@ -36,13 +37,15 @@ class PloneKeyczarCrypter(BaseCrypter):
 
         self.context = context
         self.enableLog = aq_inner(self.context).enableLog
-        self.metaKey = '%s.%s' % (KEYCZAR_ANNO_KEY, 'meta')
         self.anno = IAnnotations(self.context)
 
         if not self.anno.has_key(LOGGING_KEY):
             self.anno[LOGGING_KEY] = []
 
-        if not self.anno.has_key(self.metaKey):
+        if not self.anno.has_key(KEYCZAR_ANNO_KEYS):
+            self.anno[KEYCZAR_ANNO_KEYS] = {}
+
+        if not self.anno.has_key(KEYCZAR_ANNO_META):
             # create one with default settings.
             self.createKeyset()
             self.addPrimaryKey()
@@ -82,7 +85,7 @@ class PloneKeyczarCrypter(BaseCrypter):
 
         kmd = KeyMetadata(name, purpose, asymmetric)
 
-        self.anno[self.metaKey] = str(kmd)
+        self.anno[KEYCZAR_ANNO_META] = str(kmd)
 
     def addPrimaryKey(self):
         """
@@ -95,10 +98,9 @@ class PloneKeyczarCrypter(BaseCrypter):
         keyczar.AddVersion(status, size)
 
         # update the key storage.
-        self.anno[self.metaKey] = str(keyczar.metadata)
+        self.anno[KEYCZAR_ANNO_META] = str(keyczar.metadata)
         for v in keyczar.versions:
-            keyKey = '%s.%s' % (KEYCZAR_ANNO_KEY, str(v.version_number))
-            self.anno[keyKey] = str(keyczar.GetKey(v))
+            self.anno[KEYCZAR_ANNO_KEYS][v.version_number] = str(keyczar.GetKey(v))
 
         self.log("Added a new key as primary key; we have %s keys in total!" \
                  % len(keyczar.versions))
@@ -110,12 +112,14 @@ class PloneKeyczarCrypter(BaseCrypter):
 
         keyczar = GenericKeyczar(AnnotationReader(self.context))
         for v in keyczar.versions:
-            keyKey = '%s.%s' % (KEYCZAR_ANNO_KEY, str(v.version_number))
-            self.anno.pop(keyKey)
+            self.anno[KEYCZAR_ANNO_KEYS].pop(v.version_number)
 
-        self.anno.pop(self.metaKey)
+        self.anno.pop(KEYCZAR_ANNO_META)
 
         self.log("Retired / Removed all %s keys!" % len(keyczar.versions))
+
+        self.createKeyset()
+        self.addPrimaryKey()
 
     def encrypt(self, message):
 
@@ -139,13 +143,11 @@ class AnnotationReader(Reader):
 
     def GetMetadata(self):
 
-        metaKey = '%s.%s' % (KEYCZAR_ANNO_KEY, 'meta')
-        return self.anno[metaKey]
+        return self.anno[KEYCZAR_ANNO_META]
 
     def GetKey(self, version_number):
 
-        versionKey = '%s.%s' % (KEYCZAR_ANNO_KEY, version_number)
-        return self.anno[versionKey]
+        return self.anno[KEYCZAR_ANNO_KEYS][version_number]
 
 # testing purpose implementation.
 class FileKeyczarCrypter(BaseCrypter):

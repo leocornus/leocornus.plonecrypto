@@ -75,7 +75,7 @@ class CryptoTestCase(PlonecryptoTestCase):
         self.failUnless(len(anno.keys()) == 3)
 
         crypto.manage_addNewKey()
-        self.failUnless(len(anno.keys()) == 4)
+        self.failUnless(len(anno.keys()) == 3)
 
         second = crypto.encrypt(rawMsg)
         self.failIf(first == second)

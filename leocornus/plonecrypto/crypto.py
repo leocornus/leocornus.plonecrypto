@@ -104,7 +104,6 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
         """
 
         self.crypter.clearKeys()
-        self.crypter
 
         if REQUEST:
             REQUEST.RESPONSE.redirect('%s/manage_keys?manage_tabs_message=%s' %

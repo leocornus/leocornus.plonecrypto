@@ -13,7 +13,7 @@ from zope.interface import implements
 
 from Products.CMFCore.permissions import ManagePortal
 from Products.CMFCore.utils import UniqueObject
-from Products.CMFCore.utils import SimpleItemWithProperties
+from Products.CMFPlone.PropertiesTool import SimpleItemWithProperties
 from Products.CMFCore.utils import registerToolInterface
 
 from Products.PageTemplates.PageTemplateFile import PageTemplateFile
@@ -44,8 +44,6 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
           },
         )
 
-    title = "Plone Cryptographic Tool"
-
     manage_options = (
         { 'label':      'Keys',
           'action':     'manage_keys' },
@@ -53,10 +51,23 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
 
     manage_keys = PageTemplateFile("crypter/czar.pt", globals())
 
+    def __init__(self, id, title="Plone Cryptographic Tool"):
+        self.id = id
+        self.title = title
+
+    @property
+    def enableLog(self):
+
+        return self.getProperty('enable_log', False)
+
     @property
     def crypter(self):
 
         return IPloneCrypter(self)
+
+    def getLogs(self):
+
+        return self.crypter.getLogs()
 
     security.declarePrivate('encrypt')
     def encrypt(self, message):
@@ -98,6 +109,18 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
         if REQUEST:
             REQUEST.RESPONSE.redirect('%s/manage_keys?manage_tabs_message=%s' %
                                       (self.absolute_url(), 'All+keys+cleared.'))
+
+    security.declareProtected(ManagePortal, 'manage_clearLogs')
+    def manage_clearLogs(self, REQUEST=None):
+        """
+        create a new key for cryptography
+        """
+
+        self.crypter.clearLogs()
+
+        if REQUEST:
+            REQUEST.RESPONSE.redirect('%s/manage_keys?manage_tabs_message=%s' %
+                                      (self.absolute_url(), 'All+logs+removed.'))
 
 InitializeClass(PloneCryptoTool)
 registerToolInterface('leocornus_crypto', IPloneCryptoTool)

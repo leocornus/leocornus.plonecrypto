@@ -77,4 +77,19 @@ This instructs Zope to call routine to create a new key every four hours.
 Make sure to configure a valid manager login.
 </p>
 
+<tal:logs tal:condition="context/enableLog">
+<form method="post" action="."
+      tal:attributes="action string:${context/absolute_url}">
+    <input type="submit" name="manage_clearLogs:method" value="Clear Logs">
+    <input tal:replace="structure context/@@authenticator/authenticator" />
+</form>
+
+<p><ul>
+<tal:block tal:repeat="log context/getLogs">
+  <li><span tal:replace="log"/></li>
+</tal:block>
+<p></ul>
+
+</tal:logs>
+
 <h1 tal:replace="structure here/manage_page_footer"> PAGE FOOTER </h1>

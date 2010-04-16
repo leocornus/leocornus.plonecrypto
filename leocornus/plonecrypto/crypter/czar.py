@@ -5,6 +5,10 @@
 keyczar implementation for Plone Crypter.
 """
 
+import time
+
+from Acquisition import aq_inner
+
 from zope.annotation.interfaces import IAnnotations
 
 from keyczar import keyinfo
@@ -21,6 +25,7 @@ __email__ = "sean.chen@leocorn.com"
 
 # key prefix for annotation used for keyczar
 KEYCZAR_ANNO_KEY = 'leocornus.plonecrypto.crypter.keyczar'
+LOGGING_KEY = 'leocornus.plonecrypto.crypter.keyczar.logging'
 
 class PloneKeyczarCrypter(BaseCrypter):
     """
@@ -30,13 +35,41 @@ class PloneKeyczarCrypter(BaseCrypter):
     def __init__(self, context):
 
         self.context = context
+        self.enableLog = aq_inner(self.context).enableLog
         self.metaKey = '%s.%s' % (KEYCZAR_ANNO_KEY, 'meta')
         self.anno = IAnnotations(self.context)
+
+        if not self.anno.has_key(LOGGING_KEY):
+            self.anno[LOGGING_KEY] = []
 
         if not self.anno.has_key(self.metaKey):
             # create one with default settings.
             self.createKeyset()
             self.addPrimaryKey()
+
+    def log(self, message):
+        """
+        logging the keys management.
+        """
+
+        if not self.enableLog:
+            # log not enabled! just return
+            return
+
+        # preparing the logging message.
+        fmtMessage = '%s - %s' % (time.strftime('%Y-%m-%d %H:%M:%S'), message)
+        # logging as reverse order.
+        self.anno[LOGGING_KEY].insert(0, fmtMessage)
+
+    def clearLogs(self):
+
+        self.anno[LOGGING_KEY] = []
+
+    def getLogs(self):
+        """
+        return all logs if have.
+        """
+        return self.anno[LOGGING_KEY]
 
     def createKeyset(self, asymmetric=keyinfo.RSA_PRIV):
         """
@@ -67,6 +100,9 @@ class PloneKeyczarCrypter(BaseCrypter):
             keyKey = '%s.%s' % (KEYCZAR_ANNO_KEY, str(v.version_number))
             self.anno[keyKey] = str(keyczar.GetKey(v))
 
+        self.log("Added a new key as primary key; we have %s keys in total!" \
+                 % len(keyczar.versions))
+
     def clearKeys(self):
         """
         remove the key metadata and destroy all keys.
@@ -78,6 +114,8 @@ class PloneKeyczarCrypter(BaseCrypter):
             self.anno.pop(keyKey)
 
         self.anno.pop(self.metaKey)
+
+        self.log("Retired / Removed all %s keys!" % len(keyczar.versions))
 
     def encrypt(self, message):
 

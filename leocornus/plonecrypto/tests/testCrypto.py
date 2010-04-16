@@ -72,10 +72,10 @@ class CryptoTestCase(PlonecryptoTestCase):
         self.failUnless(first_d == rawMsg)
 
         anno = crypto.__annotations__
-        self.failUnless(len(anno.keys()) == 2)
+        self.failUnless(len(anno.keys()) == 3)
 
         crypto.manage_addNewKey()
-        self.failUnless(len(anno.keys()) == 3)
+        self.failUnless(len(anno.keys()) == 4)
 
         second = crypto.encrypt(rawMsg)
         self.failIf(first == second)
@@ -87,7 +87,7 @@ class CryptoTestCase(PlonecryptoTestCase):
         self.failUnless(first_d_again == rawMsg)
 
         crypto.manage_clearAndRegenerate()
-        self.failUnless(len(anno.keys()) == 2)
+        self.failUnless(len(anno.keys()) == 3)
 
         third = crypto.encrypt(rawMsg)
         self.failIf(third == rawMsg)
@@ -99,6 +99,24 @@ class CryptoTestCase(PlonecryptoTestCase):
         # message could be decrypted properly!
         self.assertRaises(KeyNotFoundError, crypto.decrypt, second)
         self.assertRaises(KeyNotFoundError, crypto.decrypt, first)
+
+    def testKeysLogging(self):
+
+        crypto = getToolByName(self.portal, 'leocornus_crypto')
+        crypto.manage_addProperty('enable_log', True, 'boolean')
+
+        self.failUnless(crypto.enableLog)
+        self.failUnless(len(crypto.getLogs()) == 1)
+
+        # add a primary key
+        crypto.manage_addNewKey()
+        self.failUnless(len(crypto.getLogs()) == 2)
+
+        crypto.manage_clearAndRegenerate()
+        self.failUnless(len(crypto.getLogs()) == 4)
+
+        crypto.manage_clearLogs()
+        self.failUnless(len(crypto.getLogs()) == 0)
 
 def test_suite():
     suite = unittest.TestSuite()

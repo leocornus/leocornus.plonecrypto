@@ -61,6 +61,15 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
         return self.getProperty('enable_log', False)
 
     @property
+    def maximumKeysAmount(self):
+        """
+        the maximum keys amount that we will be stored!  the value -1 means
+        unlimited!
+        """
+
+        return self.getProperty('max_keys_amount', -1)
+
+    @property
     def crypter(self):
 
         return IPloneCrypter(self)
@@ -92,6 +101,10 @@ class PloneCryptoTool(UniqueObject, SimpleItemWithProperties):
         """
 
         self.crypter.addPrimaryKey()
+        if (self.maximumKeysAmount > 0) and \
+           (self.crypter.keysAmount() > self.maximumKeysAmount):
+            # demote/remove the oldest one!
+            self.crypter.removeOldestKey()
 
         if REQUEST:
             REQUEST.RESPONSE.redirect('%s/manage_keys?manage_tabs_message=%s' %

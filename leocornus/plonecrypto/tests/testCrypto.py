@@ -64,6 +64,7 @@ class CryptoTestCase(PlonecryptoTestCase):
     def testManageKeys(self):
 
         crypto = getToolByName(self.portal, 'leocornus_crypto')
+        crypto.manage_addProperty('max_keys_amount', 5, 'int')
         rawMsg = 'Good Tool!'
 
         first = crypto.encrypt(rawMsg)
@@ -73,9 +74,11 @@ class CryptoTestCase(PlonecryptoTestCase):
 
         anno = crypto.__annotations__
         self.failUnless(len(anno.keys()) == 3)
+        self.failUnless(crypto.crypter.keysAmount() == 1)
 
         crypto.manage_addNewKey()
         self.failUnless(len(anno.keys()) == 3)
+        self.failUnless(crypto.crypter.keysAmount() == 2)
 
         second = crypto.encrypt(rawMsg)
         self.failIf(first == second)
@@ -88,6 +91,7 @@ class CryptoTestCase(PlonecryptoTestCase):
 
         crypto.manage_clearAndRegenerate()
         self.failUnless(len(anno.keys()) == 3)
+        self.failUnless(crypto.crypter.keysAmount() == 1)
 
         third = crypto.encrypt(rawMsg)
         self.failIf(third == rawMsg)
@@ -99,6 +103,25 @@ class CryptoTestCase(PlonecryptoTestCase):
         # message could be decrypted properly!
         self.assertRaises(KeyNotFoundError, crypto.decrypt, second)
         self.assertRaises(KeyNotFoundError, crypto.decrypt, first)
+
+        crypto.manage_addNewKey()
+        self.failUnless(crypto.crypter.keysAmount() == 2)
+
+        crypto.manage_addNewKey()
+        self.failUnless(crypto.crypter.keysAmount() == 3)
+
+        crypto.manage_addNewKey()
+        self.failUnless(crypto.crypter.keysAmount() == 4)
+
+        crypto.manage_addNewKey()
+        self.failUnless(crypto.crypter.keysAmount() == 5)
+
+        # rich the maximum!
+        crypto.manage_addNewKey()
+        self.failUnless(crypto.crypter.keysAmount() == 5)
+
+        crypto.manage_addNewKey()
+        self.failUnless(crypto.crypter.keysAmount() == 5)
 
     def testKeysLogging(self):
 

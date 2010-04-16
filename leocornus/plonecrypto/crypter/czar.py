@@ -72,7 +72,22 @@ class PloneKeyczarCrypter(BaseCrypter):
         """
         return all logs if have.
         """
+
         return self.anno[LOGGING_KEY]
+
+    def keysAmount(self):
+        """
+        return the total amount of keys.
+        """
+
+        return len(self.anno[KEYCZAR_ANNO_KEYS])
+
+    def writeAnnotations(self, keyczar):
+
+        # update the key storage.
+        self.anno[KEYCZAR_ANNO_META] = str(keyczar.metadata)
+        for v in keyczar.versions:
+            self.anno[KEYCZAR_ANNO_KEYS][v.version_number] = str(keyczar.GetKey(v))
 
     def createKeyset(self, asymmetric=keyinfo.RSA_PRIV):
         """
@@ -96,14 +111,31 @@ class PloneKeyczarCrypter(BaseCrypter):
         status = keyinfo.PRIMARY
         size = None
         keyczar.AddVersion(status, size)
-
-        # update the key storage.
-        self.anno[KEYCZAR_ANNO_META] = str(keyczar.metadata)
-        for v in keyczar.versions:
-            self.anno[KEYCZAR_ANNO_KEYS][v.version_number] = str(keyczar.GetKey(v))
+        self.writeAnnotations(keyczar)
 
         self.log("Added a new key as primary key; we have %s keys in total!" \
                  % len(keyczar.versions))
+
+    def removeOldestKey(self):
+        """
+        remove the oldest key from the chain.
+        """
+
+        # find out the oldest key,
+        # the key with smallest version number will be the oldest key.
+        versions = self.anno[KEYCZAR_ANNO_KEYS].keys()
+        versions.sort()
+        oldest_version = versions[0]
+
+        keyczar = GenericKeyczar(AnnotationReader(self.context))
+        # suppose the oldest key is in active status
+        keyczar.Demote(oldest_version)
+        keyczar.Revoke(oldest_version)
+        self.writeAnnotations(keyczar)
+        self.anno[KEYCZAR_ANNO_KEYS].pop(oldest_version)
+
+        self.log("Removed the oldest key: %s; we have %s keys in total!" \
+                 % (oldest_version, len(keyczar.versions) -1))
 
     def clearKeys(self):
         """

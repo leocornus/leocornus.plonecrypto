@@ -5,7 +5,10 @@ Change Log
 version 0.2
 -----------
 
-  * 
+  * Tracking logs for keys' rotating and retiring
+  * Allow user to select maximum keys to keep
+  * Ability to automatically retire keys when the amount of active
+    keys reached the maximum
 
 version 0.1
 -----------
